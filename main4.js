@@ -176,9 +176,9 @@ const UPGRADE_POOL = [
 	{
 		txt: '강화 : 화살',
 		act: g => {
-			if (!g.weaponSet.includes('bullet')) {
-				g.weaponSet.push('bullet');
-				g.addWeaponTimer('bullet');   // ← 전용 타이머 등록!
+			if (!g.weaponSet.includes('twinShot')) {
+				g.weaponSet.push('twinShot');
+				g.addWeaponTimer('twinShot');   // ← 전용 타이머 등록!
 			} else {
 				SETTINGS.bulletTypes.bullet.dmg *= 1.2;
 			}
@@ -589,7 +589,7 @@ class Game extends Phaser.Scene {
 	collectGem(_, gem) {
 		this.xp += gem.value; gem.destroy();
 		if (this.xp >= this.nextXP) {
-			this.xp -= this.nextXP; this.nextXP = Math.floor(this.nextXP * 1.5);
+			this.xp -= this.nextXP; this.nextXP = Math.floor(this.nextXP * 1.3);
 			this.level++;
 			this.score += this.level * 10
 			this.hp = Math.min(SETTINGS.player.maxHP, this.hp + 20);
