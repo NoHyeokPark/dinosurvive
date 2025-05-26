@@ -8,7 +8,7 @@ const SETTINGS = {
 	/* 플레이어 */
 	player: {
 		maxHP: 100,
-		collideDmg: 8,
+		collideDmg: 10,
 		speed: 200,
 		fireRate: 200,   // ms
 		iFrame: 100      // ms
@@ -90,7 +90,8 @@ const SETTINGS = {
 	enemyTypes: {
 		slime: { sprite: 'enemy', baseHP: 3, hpPerLv: 2, speed: 60 },
 		orc: { sprite: 'enemy_orc', baseHP: 8, hpPerLv: 4, speed: 20 },
-		bat: { sprite: 'enemy_bat', baseHP: 2, hpPerLv: 1, speed: 100 }
+		bat: { sprite: 'enemy_bat', baseHP: 2, hpPerLv: 1, speed: 100 },
+		ice: { sprite: 'enemy_ice', baseHP: 200, hpPerLv: 10, speed: 50 }
 	},
 	enemySpawnOrder: ['slime', 'bat', 'orc'],  // 필요하면 확률/웨이브 로직으로 교체
 
@@ -261,6 +262,7 @@ class Game extends Phaser.Scene {
 		this.load.image('enemy_bat', './assets/slime3.png');
 		this.load.image('gem', './assets/flack.png');
 		this.load.image('background', './assets/bg2.jpg');
+		this.load.image('ice', './assets/ice.png');
 	}
 
 	/* ----------------------------------------------------- */
@@ -346,13 +348,17 @@ class Game extends Phaser.Scene {
 
 			   // 빙하기 진입
 			   if (this.timeLeft <= 0) {
-			     const coldFactor = -this.timeLeft / 100;
+				if (!SETTINGS.enemySpawnOrder.includes('ice')) {
+				  SETTINGS.enemySpawnOrder.push('ice');
+				  console.log('[빙하기] ice 몬스터가 출현합니다!');
+				}
+			     const coldFactor = -this.timeLeft / 30;
 
 			     // 체력 점차 감소
 			     this.hp = Math.max(0, this.hp - 1 * coldFactor);
 
 			     // 속도 점차 감소 (최소치 제한)
-			     SETTINGS.player.speed = Math.max(50, SETTINGS.player.speed - 5);
+			     SETTINGS.player.speed = Math.max(100, SETTINGS.player.speed - 5);
 
 			     // 빙하기 효과 텍스트
 			     this.timerText.setText(`빙하기 ${-this.timeLeft}년째`);
@@ -433,6 +439,11 @@ class Game extends Phaser.Scene {
 
 			default: deg = Phaser.Math.Between(0, 360);
 		}
+		this.iceOverlay = this.add.rectangle(
+		  SETTINGS.game.W / 2, SETTINGS.game.H / 2,
+		  SETTINGS.game.W, SETTINGS.game.H,
+		  0x66ccff, 0.2            // 파란색, 20% 불투명도
+		).setDepth(100).setVisible(false);
 
 		/* ── 총알 생성 ─────────────────── */
 
@@ -455,7 +466,12 @@ class Game extends Phaser.Scene {
 	}
 	/* ----------------------------------------------------- */
 	update(_, dt) {
-
+		if (this.timeLeft <= 0) {
+		  this.iceOverlay.setVisible(true);
+		} else {
+		  this.iceOverlay.setVisible(false);
+		}
+		this.iceOverlay.setAlpha(Math.min(0.8, 0.2 + (-this.timeLeft / 500)));
 
 		/* --- 플레이어 이동 --- */
 		const v = SETTINGS.player.speed;
