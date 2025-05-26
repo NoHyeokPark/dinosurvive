@@ -3,7 +3,7 @@
    1) 모든 수치를 한곳에 : SETTINGS
 --------------------------------------------------------- */
 const SETTINGS = {
-	game: { W: 800, H: 600, duration: 10 },
+	game: { W: 800, H: 600, duration: 180 },
 	spawnEdgeMargin: 30,
 	/* 플레이어 */
 	player: {
