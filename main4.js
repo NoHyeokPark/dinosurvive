@@ -90,7 +90,7 @@ const SETTINGS = {
 	enemyTypes: {
 		slime: { sprite: 'enemy', baseHP: 3, hpPerLv: 2, speed: 60 },
 		orc: { sprite: 'enemy_orc', baseHP: 8, hpPerLv: 4, speed: 20 },
-		bat: { sprite: 'enemy_bat', baseHP: 2, hpPerLv: 0.5, speed: 100 }
+		bat: { sprite: 'enemy_bat', baseHP: 2, hpPerLv: 1, speed: 100 }
 	},
 	enemySpawnOrder: ['slime', 'bat', 'orc'],  // 필요하면 확률/웨이브 로직으로 교체
 
@@ -133,7 +133,8 @@ const UPGRADE_POOL = [
 				g.weaponSet.push('fireball');
 				g.addWeaponTimer('fireball');   // ← 전용 타이머 등록!
 			} else {
-				SETTINGS.bulletTypes.fireball.aoe.radius += 10;
+				SETTINGS.bulletTypes.fireball.aoe.radius += 40;
+				SETTINGS.bulletTypes.fireball.fireFactor *= 0.8;
 			}
 		}
 	},
@@ -144,7 +145,8 @@ const UPGRADE_POOL = [
 				g.weaponSet.push('laser');
 				g.addWeaponTimer('laser');   // ← 전용 타이머 등록!
 			} else {
-				SETTINGS.bulletTypes.laser.fireFactor *= 0.8;
+				SETTINGS.bulletTypes.laser.fireFactor *= 0.7;
+				SETTINGS.bulletTypes.laser.dmg *= 1.1;
 			}
 		}
 	},
@@ -155,8 +157,8 @@ const UPGRADE_POOL = [
 				g.weaponSet.push('orbiter');
 				g.addWeaponTimer('orbiter');   // ← 전용 타이머 등록!
 			} else {
-				SETTINGS.bulletTypes.orbiter.life *= 1.2;
-				SETTINGS.bulletTypes.orbiter.speed *= 1.1;
+				SETTINGS.bulletTypes.orbiter.life *= 1.5;
+				SETTINGS.bulletTypes.orbiter.speed *= 1.3;
 			}
 		}
 	},
@@ -168,7 +170,7 @@ const UPGRADE_POOL = [
 				g.weaponSet.push('sword');
 				g.addWeaponTimer('sword');   // ← 전용 타이머 등록!
 			} else {
-				SETTINGS.bulletTypes.sword.dmg *= 1.2;
+				SETTINGS.bulletTypes.sword.dmg *= 2;
 				SETTINGS.bulletTypes.sword.hitR *= 1.2;
 			}
 		}
@@ -180,7 +182,8 @@ const UPGRADE_POOL = [
 				g.weaponSet.push('twinShot');
 				g.addWeaponTimer('twinShot');   // ← 전용 타이머 등록!
 			} else {
-				SETTINGS.bulletTypes.bullet.dmg *= 1.2;
+				SETTINGS.bulletTypes.twinShot.dmg *= 1.5;
+				SETTINGS.bulletTypes.twinShot.penetrate += 1;
 			}
 		}
 	},
@@ -199,6 +202,7 @@ const UPGRADE_POOL = [
 				g.addWeaponTimer('seeker');   // ← 전용 타이머 등록!
 			} else {
 				SETTINGS.bulletTypes.seeker.penetrate += 1;
+				SETTINGS.bulletTypes.seeker.dmg += 2;
 			}
 		}
 	},
@@ -338,11 +342,23 @@ class Game extends Phaser.Scene {
 		this.time.addEvent({
 			delay: 1000, loop: true,
 			callback: () => {
-				if (--this.timeLeft <= 0) {
-					this.hp -=  1;
-					this.speed -= 1;
-				}
-				this.timerText.setText(`빙하기 까지 ${this.timeLeft}백년`);
+			   this.timeLeft--;
+
+			   // 빙하기 진입
+			   if (this.timeLeft <= 0) {
+			     const coldFactor = -this.timeLeft / 100;
+
+			     // 체력 점차 감소
+			     this.hp = Math.max(0, this.hp - 1 * coldFactor);
+
+			     // 속도 점차 감소 (최소치 제한)
+			     SETTINGS.player.speed = Math.max(50, SETTINGS.player.speed - 5);
+
+			     // 빙하기 효과 텍스트
+			     this.timerText.setText(`빙하기 ${-this.timeLeft}년째`);
+			   } else {
+			     this.timerText.setText(`빙하기까지 ${this.timeLeft}백년`);
+			   }
 			}
 		});
 		/* 플레이어가 현재 보유한 무기들 */
@@ -592,7 +608,7 @@ class Game extends Phaser.Scene {
 			this.xp -= this.nextXP; this.nextXP = Math.floor(this.nextXP * 1.3);
 			this.level++;
 			this.score += this.level * 10
-			this.hp = Math.min(SETTINGS.player.maxHP, this.hp + 20);
+			this.hp = Math.min(SETTINGS.player.maxHP, this.hp + 10);
 			this.scene.pause(); this.scene.launch('Upgrade');
 		}
 	}
@@ -618,7 +634,7 @@ class Game extends Phaser.Scene {
 	/* ============ 게임 오버 ============ */
 	gameOver() {
 		this.scene.pause();
-		this.score += 300 - this.timeLeft
+		this.score += SETTINGS.game.duration - this.timeLeft
 		this.add.text(
 			SETTINGS.game.W / 2,
 			SETTINGS.game.H / 2 - 40,
@@ -626,31 +642,34 @@ class Game extends Phaser.Scene {
 			{ fontSize: 48, fill: '#f00', align: 'center' }
 		).setOrigin(0.5)
 		const lb = JSON.parse(localStorage.getItem('LB') || '[]')
-		const scoreid = localStorage.getItem('seq' || '0')
+		let scoreid = localStorage.getItem('seq');
+		if (scoreid === null) scoreid = '0';
 
-		let name = prompt('이름을 입력하세요').trim()
-		if (!name === null) {
+		let name = prompt('이름을 입력하세요');
+		if (name !== null && name.trim() !== '') {
 			const entry = {
 				id: scoreid,
-				name: name,
+				name: name.trim(),
 				score: this.score
-			}
+			};
 			lb.push(entry);
-			lb.sort((a, b) => (b.score - a.score));
+			lb.sort((a, b) => b.score - a.score);
 			if (lb.length > 10) lb.length = 10;
 			localStorage.setItem('LB', JSON.stringify(lb));
 			localStorage.setItem('seq', "" + (parseInt(scoreid) + 1));
 		}
-		const tooltip = document.getElementById('tooltip')
-		let board = ''
+
+		// 순위 출력 (최신 순위 기준)
+		const tooltip = document.getElementById('tooltip');
+		let board = '';
 		lb.forEach((e, idx) => {
-			board += `${idx + 1}. ${e.name} — ${e.score}<br>`
+			board += `${idx + 1}. ${e.name} — ${e.score}<br>`;
 		});
-		tooltip.innerHTML = board
-		tooltip.style.left = '50%'
-		tooltip.style.top = '50%'
-		tooltip.style.display = 'block'
-		tooltip.style.transform = 'translate(-50%, -50%)'
+		tooltip.innerHTML = board;
+		tooltip.style.left = '50%';
+		tooltip.style.top = '50%';
+		tooltip.style.transform = 'translate(-50%, -50%)';
+		tooltip.style.display = 'block';
 	}
 }
 
