@@ -3,7 +3,7 @@
    1) 모든 수치를 한곳에 : SETTINGS
 --------------------------------------------------------- */
 const SETTINGS = {
-	game: { W: 800, H: 600, duration: 180 },
+	game: { W: 800, H: 600, duration: 10 },
 	spawnEdgeMargin: 30,
 	/* 플레이어 */
 	player: {
@@ -20,7 +20,7 @@ const SETTINGS = {
 		twinShot: {
 			sprite: 'bullet',
 			speed: 320, dmg: 9, life: 900,
-			fireFactor: 1.2,               // player.fireRate × 이값(ms)
+			fireFactor: 1.1,               // player.fireRate × 이값(ms)
 			mode: 'multi',                 // ← 발사 모드
 			ranges: [[-10, 10], [170, 190]],
 			hitR: 15,                       // 충돌 반지름(px)
@@ -30,8 +30,8 @@ const SETTINGS = {
 		/* ───────── 2. 플레이어 이동방향 기반 회전 ───────── */
 		laser: {
 			sprite: 'bullet_arrow',
-			speed: 380, dmg: 9, life: 1000,
-			fireFactor: 1,
+			speed: 580, dmg: 10, life: 800,
+			fireFactor: 0.5,
 			mode: 'dir',                   // 방향 회전
 			baseRange: [-30, 30],
 			hitR: 15,
@@ -42,8 +42,8 @@ const SETTINGS = {
 		/* ───────── 3. 원 궤도( Orbit ) ───────── */
 		orbiter: {
 			sprite: 'bullet_orb',
-			speed: 200, dmg: 6, life: 5000,  // speed=0 (이동 X)
-			fireFactor: 4,
+			speed: 200, dmg: 7, life: 2500,  // speed=0 (이동 X)
+			fireFactor: 2,
 			mode: 'orbit',
 			orbit: { r: 80, omega: 360 },   // 반지름, 각속도(°/s)
 			hitR: 12,
@@ -53,7 +53,7 @@ const SETTINGS = {
 		/* ───────── 4. 가장 가까운 적 + 오차 ───────── */
 		seeker: {
 			sprite: 'bullet_seek',
-			speed: 450, dmg: 5, life: 800,
+			speed: 600, dmg: 5, life: 800,
 			fireFactor: 0.8,
 			mode: 'seek',
 			error: 15,                     // ±오차(deg)
@@ -63,7 +63,7 @@ const SETTINGS = {
 
 		sword: {
 			sprite: 'bullet_sword',
-			speed: 200, dmg: 12, life: 300,
+			speed: 200, dmg: 18, life: 300,
 			fireFactor: 1,
 			mode: 'dir',                   // 방향 회전
 			baseRange: [0, 1],
@@ -75,23 +75,23 @@ const SETTINGS = {
 		/* ───────── 5. N회 관통( Fireball + AOE ) ───────── */
 		fireball: {
 			sprite: 'bullet_fire',
-			speed: 250, dmg: 1, life: 800,
+			speed: 100, dmg: 1, life: 1600,
 			fireFactor: 2.5,
 			mode: 'multi',
-			ranges: [[-45, 45]],
+			ranges: [[0, 360]],
 			hitR: 15,
 			penetrate: 0,
-			aoe: { radius: 65, dmg: 12 }
+			aoe: { radius: 65, dmg: 14 }
 		}
 	},
 	defaultBulletSet: ['twinShot'],
 
 	/* 여러 적 정의 */
 	enemyTypes: {
-		slime: { sprite: 'enemy', baseHP: 3, hpPerLv: 2, speed: 60 },
-		orc: { sprite: 'enemy_orc', baseHP: 8, hpPerLv: 4, speed: 20 },
-		bat: { sprite: 'enemy_bat', baseHP: 2, hpPerLv: 1, speed: 100 },
-		ice: { sprite: 'enemy_ice', baseHP: 200, hpPerLv: 10, speed: 50 }
+		slime: { sprite: 'enemy', baseHP: 5, hpPerLv: 4, speed: 60 },
+		orc: { sprite: 'enemy_orc', baseHP: 20, hpPerLv: 15, speed: 20 },
+		bat: { sprite: 'enemy_bat', baseHP: 3, hpPerLv: 1, speed: 100 },
+		ice: { sprite: 'enemy_ice', baseHP: 200, hpPerLv: 200, speed: 50 }
 	},
 	enemySpawnOrder: ['slime', 'bat', 'orc'],  // 필요하면 확률/웨이브 로직으로 교체
 
@@ -135,19 +135,19 @@ const UPGRADE_POOL = [
 				g.addWeaponTimer('fireball');   // ← 전용 타이머 등록!
 			} else {
 				SETTINGS.bulletTypes.fireball.aoe.radius += 40;
-				SETTINGS.bulletTypes.fireball.fireFactor *= 0.8;
+				SETTINGS.bulletTypes.fireball.fireFactor *= 0.85;
 			}
 		}
 	},
 	{
-		txt: '강화 : 파괴광선',
+		txt: '강화 : 하이드로펌프',
 		act: g => {
 			if (!g.weaponSet.includes('laser')) {
 				g.weaponSet.push('laser');
 				g.addWeaponTimer('laser');   // ← 전용 타이머 등록!
 			} else {
 				SETTINGS.bulletTypes.laser.fireFactor *= 0.7;
-				SETTINGS.bulletTypes.laser.dmg *= 1.1;
+				SETTINGS.bulletTypes.laser.dmg *= 1.2;
 			}
 		}
 	},
@@ -262,7 +262,7 @@ class Game extends Phaser.Scene {
 		this.load.image('enemy_bat', './assets/slime3.png');
 		this.load.image('gem', './assets/flack.png');
 		this.load.image('background', './assets/bg2.jpg');
-		this.load.image('ice', './assets/ice.png');
+		this.load.image('enemy_ice', './assets/slime.png');
 	}
 
 	/* ----------------------------------------------------- */
@@ -442,7 +442,7 @@ class Game extends Phaser.Scene {
 		this.iceOverlay = this.add.rectangle(
 		  SETTINGS.game.W / 2, SETTINGS.game.H / 2,
 		  SETTINGS.game.W, SETTINGS.game.H,
-		  0x66ccff, 0.2            // 파란색, 20% 불투명도
+		  0x66ccff, 0.1            // 파란색, 20% 불투명도
 		).setDepth(100).setVisible(false);
 
 		/* ── 총알 생성 ─────────────────── */
@@ -466,13 +466,9 @@ class Game extends Phaser.Scene {
 	}
 	/* ----------------------------------------------------- */
 	update(_, dt) {
-		if (this.timeLeft <= 0) {
+		if (this.timeLeft == 0) {
 		  this.iceOverlay.setVisible(true);
-		} else {
-		  this.iceOverlay.setVisible(false);
 		}
-		this.iceOverlay.setAlpha(Math.min(0.8, 0.2 + (-this.timeLeft / 500)));
-
 		/* --- 플레이어 이동 --- */
 		const v = SETTINGS.player.speed;
 		const vx = (this.cursors.left.isDown ? -v : 0) + (this.cursors.right.isDown ? v : 0);
