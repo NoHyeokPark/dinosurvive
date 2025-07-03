@@ -2,7 +2,7 @@
 
 <div align="center">
   
-![DinoSurvive Logo](https://via.placeholder.com/400x120/4CAF50/FFFFFF?text=🦕+DinoSurvive)
+![DinoSurvive Logo](assets/dinologo.png)
 
 **귀여운 공룡이 빙하기를 뚫고 살아남는 뱀서라이크 생존 게임**
 
