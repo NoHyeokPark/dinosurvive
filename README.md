@@ -117,10 +117,9 @@ dinosurvive/
 ## 📊 localStorage 구조
 
 {
-"bestScore": 15420, 
-"bestScoreDate": "2025-07-03T19:51:00.000Z",
-"totalPlayTime": 3600,
-"gamesPlayed": 25 
+id: scoreid,
+name: name.trim(),
+score: this.score
 }
 
 
