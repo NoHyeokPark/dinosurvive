@@ -90,21 +90,21 @@ VSCode에서 index.html 우클릭 → "Open with Live Server"
 ## 📁 프로젝트 구조
 
 dinosurvive/
-├── index.html # 메인 HTML 파일
-├── css/
-│ └── style.css # 게임 스타일시트
-├── js/
-│ ├── main.js # 게임 메인 로직
-│ ├── player.js # 플레이어 클래스
-│ ├── enemy.js # 적 클래스
-│ ├── weapon.js # 무기 시스템
-│ ├── storage.js # localStorage 관리
-│ └── utils.js # 유틸리티 함수
-├── assets/
-│ ├── sprites/
-│ │ ├── dino.png # 공룡 스프라이트 시트
-│ │ └── enemies.png # 적 스프라이트
-└── README.md
+├── index.html # 메인 HTML 파일  
+├── css/  
+│ └── style.css # 게임 스타일시트  
+├── js/  
+│ ├── main.js # 게임 메인 로직  
+│ ├── player.js # 플레이어 클래스  
+│ ├── enemy.js # 적 클래스  
+│ ├── weapon.js # 무기 시스템  
+│ ├── storage.js # localStorage 관리  
+│ └── utils.js # 유틸리티 함수  
+├── assets/  
+│ ├── sprites/  
+│ │ ├── dino.png # 공룡 스프라이트 시트  
+│ │ └── enemies.png # 적 스프라이트  
+└── README.md  
 
 
 ## 🛠️ 기술 스택
@@ -116,11 +116,11 @@ dinosurvive/
 
 ## 📊 localStorage 구조
 
-{
-id: scoreid,
-name: name.trim(),
-score: this.score
-}
+{  
+id: scoreid,  
+name: name.trim(),  
+score: this.score  
+}  
 
 
 ## 🎨 스프라이트 정보
