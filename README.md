@@ -116,12 +116,11 @@ dinosurvive/
 
 ## 📊 localStorage 구조
 
-// 저장되는 데이터 구조
 {
-"bestScore": 15420, // 최고 점수
-"bestScoreDate": "2025-07-03T19:51:00.000Z", // 달성 일시
-"totalPlayTime": 3600, // 총 플레이 시간 (초)
-"gamesPlayed": 25 // 총 게임 횟수
+"bestScore": 15420, 
+"bestScoreDate": "2025-07-03T19:51:00.000Z",
+"totalPlayTime": 3600,
+"gamesPlayed": 25 
 }
 
 
@@ -129,7 +128,7 @@ dinosurvive/
 
 ### 공룡 스프라이트 시트
 - **크기**: 512x64px (8프레임 × 64x64px)
-- **애니메이션**: 걷기, 대기, 공격
+- **애니메이션**: 걷기, 대기
 - **프레임 속도**: 8fps
 
 ## 📄 라이선스
